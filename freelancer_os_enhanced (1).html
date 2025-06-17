@@ -1,0 +1,1927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Freelancer OS: Client + Cash Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            50% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+            100% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .achievements-bar {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .achievement-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .achievement-badge.unlocked {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #8b6914;
+            animation: pulse 2s infinite;
+        }
+
+        .achievement-badge.locked {
+            background: #e9ecef;
+            color: #6c757d;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .level-progress {
+            flex: 1;
+            max-width: 300px;
+            margin: 0 20px;
+        }
+
+        .level-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+            animation: progressGlow 2s infinite alternate;
+        }
+
+        @keyframes progressGlow {
+            0% { box-shadow: 0 0 5px rgba(102, 126, 234, 0.5); }
+            100% { box-shadow: 0 0 15px rgba(102, 126, 234, 0.8); }
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .summary-card.milestone {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            animation: celebrate 1s ease-in-out;
+        }
+
+        @keyframes celebrate {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(1.05) rotate(1deg); }
+            75% { transform: scale(1.05) rotate(-1deg); }
+        }
+
+        .summary-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .summary-card.milestone .value {
+            color: white;
+        }
+
+        .summary-card .label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .summary-card.milestone .label {
+            color: rgba(255,255,255,0.9);
+        }
+
+        .navigation {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .nav-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+
+        .nav-card.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #f8f9ff, #ffffff);
+        }
+
+        .nav-card .icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-card:hover .icon {
+            transform: scale(1.1);
+        }
+
+        .nav-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .nav-card p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .section {
+            background: white;
+            margin-bottom: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-header {
+            background: #f8f9fa;
+            padding: 20px 25px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-header h2 {
+            font-size: 1.5rem;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .section-content {
+            padding: 25px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .table th,
+        .table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .table tr {
+            transition: all 0.3s ease;
+        }
+
+        .table tr:hover {
+            background-color: #f8f9fa;
+            transform: scale(1.01);
+        }
+
+        .table tr.new-entry {
+            animation: highlightNew 2s ease-out;
+        }
+
+        @keyframes highlightNew {
+            0% { background-color: #d4edda; transform: scale(1.02); }
+            100% { background-color: transparent; transform: scale(1); }
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .status-lead { background: #fff3cd; color: #856404; }
+        .status-progress { background: #d1ecf1; color: #0c5460; }
+        .status-completed { background: #d4edda; color: #155724; }
+        .status-cold { background: #f8d7da; color: #721c24; }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s ease, height 0.3s ease;
+        }
+
+        .btn:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+            position: relative;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #333;
+        }
+
+        .close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 25px;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        /* Notification Styles */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #d4edda;
+            color: #155724;
+            padding: 15px 20px;
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            z-index: 1001;
+            animation: slideInRight 0.3s ease;
+            max-width: 300px;
+        }
+
+        .notification.success {
+            background: #d4edda;
+            color: #155724;
+            border-left-color: #28a745;
+        }
+
+        .notification.achievement {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #8b6914;
+            border-left-color: #ffc107;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .notification-close {
+            float: right;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-left: 10px;
+            opacity: 0.7;
+        }
+
+        .notification-close:hover {
+            opacity: 1;
+        }
+
+        /* Progress Ring */
+        .progress-ring {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 10px;
+        }
+
+        .progress-ring-circle {
+            fill: none;
+            stroke: #e9ecef;
+            stroke-width: 4;
+        }
+
+        .progress-ring-progress {
+            fill: none;
+            stroke: #667eea;
+            stroke-width: 4;
+            stroke-linecap: round;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+            transition: stroke-dasharray 0.5s ease;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .navigation {
+                grid-template-columns: 1fr;
+            }
+            
+            .achievements-bar {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .level-progress {
+                max-width: 100%;
+                margin: 15px 0;
+            }
+            
+            .table {
+                font-size: 0.8rem;
+            }
+            
+            .table th,
+            .table td {
+                padding: 8px;
+            }
+            
+            .modal-content {
+                width: 95%;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🏢 Freelancer HQ</h1>
+            <p>Your complete workspace to manage clients, projects, and payments</p>
+        </div>
+
+        <!-- Achievements Bar -->
+        <div class="achievements-bar">
+            <div class="achievement-badge unlocked" title="First Client Added">
+                🎯 <span>First Client</span>
+            </div>
+            <div class="achievement-badge unlocked" title="Completed 5 Projects">
+                🚀 <span>Project Master</span>
+            </div>
+            <div class="achievement-badge locked" title="Earn $10,000 in a month">
+                💰 <span>Money Maker</span>
+            </div>
+            
+            <div class="level-progress">
+                <div class="level-info">
+                    <span>Level 3 Freelancer</span>
+                    <span>750/1000 XP</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 75%"></div>
+                </div>
+            </div>
+            
+            <div class="achievement-badge unlocked" title="Sent 10 Invoices">
+                📋 <span>Invoice Pro</span>
+            </div>
+            <div class="achievement-badge locked" title="Get 20 Clients">
+                👥 <span>Network King</span>
+            </div>
+        </div>
+
+
+        <!-- Monthly Summary with Milestone Celebrations -->
+        <div class="summary-cards">
+            <div class="summary-card milestone" onclick="celebrateAchievement('income')">
+                <div class="value">$12,450</div>
+                <div class="label">Monthly Income 🎉</div>
+            </div>
+            <div class="summary-card" onclick="showExpenseBreakdown()">
+                <div class="value">$2,340</div>
+                <div class="label">Monthly Expenses</div>
+            </div>
+            <div class="summary-card" onclick="showProjectProgress()">
+                <div class="value">8</div>
+                <div class="label">Active Projects</div>
+                <svg class="progress-ring">
+                    <circle class="progress-ring-circle" cx="30" cy="30" r="26"></circle>
+                    <circle class="progress-ring-progress" cx="30" cy="30" r="26" 
+                            stroke-dasharray="163.36" stroke-dashoffset="32.67"></circle>
+                </svg>
+            </div>
+            <div class="summary-card" onclick="showClientGrowth()">
+                <div class="value">15</div>
+                <div class="label">Total Clients</div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation">
+            <div class="nav-card active" onclick="showSection('clients')" data-section="clients">
+                <div class="icon">✅</div>
+                <h3>Client Dashboard</h3>
+                <p>Track all your clients at a glance</p>
+            </div>
+            <div class="nav-card" onclick="showSection('projects')" data-section="projects">
+                <div class="icon">📁</div>
+                <h3>Project Manager</h3>
+                <p>Manage projects from start to finish</p>
+            </div>
+            <div class="nav-card" onclick="showSection('finances')" data-section="finances">
+                <div class="icon">💸</div>
+                <h3>Income + Expenses</h3>
+                <p>Keep an eye on your money</p>
+            </div>
+            <div class="nav-card" onclick="showSection('invoices')" data-section="invoices">
+                <div class="icon">🧾</div>
+                <h3>Invoice Tracker</h3>
+                <p>Track pending and overdue invoices</p>
+            </div>
+            <div class="nav-card" onclick="showSection('outreach')" data-section="outreach">
+                <div class="icon">✉️</div>
+                <h3>Cold Outreach</h3>
+                <p>Track leads and client outreach</p>
+            </div>
+        </div>
+
+        <!-- Client Dashboard Section -->
+        <div class="section" id="clients">
+            <div class="section-header">
+                <h2>✅ Client Dashboard</h2>
+                <div class="section-stats">
+                    <span>📈 +3 this month</span>
+                    <span>💰 $45,200 total value</span>
+                </div>
+            </div>
+            <div class="section-content">
+                <button class="btn" onclick="openModal('clientModal')">+ Add New Client</button>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Client Name</th>
+                            <th>Contact Info</th>
+                            <th>Project Name</th>
+                            <th>Status</th>
+                            <th>Last Contact</th>
+                            <th>Value ($)</th>
+                            <th>Next Action</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clientsTableBody">
+                        <tr>
+                            <td>Acme Corp</td>
+                            <td>john@acme.com<br>+1 (555) 123-4567</td>
+                            <td>Website Redesign</td>
+                            <td><span class="status-badge status-progress">In Progress</span></td>
+                            <td>2024-01-15</td>
+                            <td>$5,500</td>
+                            <td>Send wireframes</td>
+                            <td>
+                                <button class="btn" style="padding: 5px 10px; font-size: 0.8rem;" onclick="markCompleted(this)">✓ Complete</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>TechStart Inc</td>
+                            <td>sarah@techstart.io<br>+1 (555) 987-6543</td>
+                            <td>Brand Identity</td>
+                            <td><span class="status-badge status-lead">Lead</span></td>
+                            <td>2024-01-12</td>
+                            <td>$3,200</td>
+                            <td>Follow up call</td>
+                            <td>
+                                <button class="btn" style="padding: 5px 10px; font-size: 0.8rem;" onclick="convertLead(this)">🚀 Convert</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Green Solutions</td>
+                            <td>mike@greensol.com<br>+1 (555) 456-7890</td>
+                            <td>Marketing Campaign</td>
+                            <td><span class="status-badge status-completed">Completed</span></td>
+                            <td>2024-01-10</td>
+                            <td>$4,800</td>
+                            <td>Request testimonial</td>
+                            <td>
+                                <button class="btn" style="padding: 5px 10px; font-size: 0.8rem;" onclick="requestTestimonial(this)">⭐ Testimonial</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Project Manager Section -->
+        <div class="section" id="projects" style="display: none;">
+            <div class="section-header">
+                <h2>📁 Project Manager</h2>
+                <div class="section-stats">
+                    <span>⚡ 3 active</span>
+                    <span>🎯 75% avg completion</span>
+                </div>
+            </div>
+            <div class="section-content">
+                <button class="btn" onclick="openModal('projectModal')">+ Add New Project</button>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Project Title</th>
+                            <th>Client</th>
+                            <th>Start Date</th>
+                            <th>Due Date</th>
+                            <th>Deliverables</th>
+                            <th>Status</th>
+                            <th>Progress</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="projectsTableBody">
+                        <tr>
+                            <td>Website Redesign</td>
+                            <td>Acme Corp</td>
+                            <td>2024-01-01</td>
+                            <td>2024-02-15</td>
+                            <td>Wireframes, Design, Development</td>
+                            <td><span class="status-badge status-progress">Editing</span></td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div class="progress-bar" style="width: 100px;">
+                                        <div class="progress-fill" style="width: 65%"></div>
+                                    </div>
+                                    <span>65%</span>
+                                </div>
+                            </td>
+                            <td>
+                                <button class="btn" style="padding: 5px 10px; font-size: 0.8rem;" onclick="updateProgress(this, 75)">📈 Update</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Brand Identity Package</td>
+                            <td>TechStart Inc</td>
+                            <td>2024-01-15</td>
+                            <td>2024-02-28</td>
+                            <td>Logo, Brand Guidelines, Business Cards</td>
+                            <td><span class="status-badge status-lead">Planned</span></td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div class="progress-bar" style="width: 100px;">
+                                        <div class="progress-fill" style="width: 10%"></div>
+                                    </div>
+                                    <span>10%</span>
+                                </div>
+                            </td>
+                            <td>
+                                <button class="btn" style="padding: 5px 10px; font-size: 0.8rem;" onclick="startProject(this)">▶️ Start</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Marketing Campaign</td>
+                            <td>Green Solutions</td>
+                            <td>2023-12-01</td>
+                            <td>2024-01-10</td>
+                            <td>Social Media, Email Templates, Landing Page</td>
+                            <td><span class="status-badge status-completed">Done</span></td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div class="progress-bar" style="width: 100px;">
+                                        <div class="progress-fill" style="width: 100%"></div>
+                                    </div>
+                                    <span>100%</span>
+                                </div>
+                            </td>
+                            <td>
+                                <button class="btn" style="padding: 5px 10px; font-size: 0.8rem;" onclick="archiveProject(this)">📦 Archive</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Income + Expense Tracker Section -->
+        <div class="section" id="finances" style="display: none;">
+            <div class="section-header">
+                <h2>💸 Income + Expense Tracker</h2>
+                <div class="section-stats">
+                    <span>📊 +$10,110 net this month</span>
+                    <span>📈 +23% vs last month</span>
+                </div>
+            </div>
+            <div class="section-content">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                    <!-- Income Section -->
+                    <div>
+                        <h3 style="margin-bottom: 15px; color: #28a745;">💰 Income</h3>
+                        <button class="btn" onclick="openModal('incomeModal')">+ Add Income</button>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Client</th>
+                                    <th>Amount</th>
+                                    <th>Payment Date</th>
+                                    <th>Method</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="incomeTableBody">
+                                <tr>
+                                    <td>Acme Corp</td>
+                                    <td>$2,750</td>
+                                    <td>2024-01-15</td>
+                                    <td>Bank Transfer</td>
+                                    <td><span class="status-badge status-completed">Paid</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Green Solutions</td>
+                                    <td>$4,800</td>
+                                    <td>2024-01-10</td>
+                                    <td>PayPal</td>
+                                    <td><span class="status-badge status-completed">Paid</span></td>
+                                </tr>
+                                <tr>
+                                    <td>TechStart Inc</td>
+                                    <td>$1,600</td>
+                                    <td>2024-01-20</td>
+                                    <td>Stripe</td>
+                                    <td><span class="status-badge status-progress">Pending</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Expenses Section -->
+                    <div>
+                        <h3 style="margin-bottom: 15px; color: #dc3545;">💳 Expenses</h3>
+                        <button class="btn" onclick="openModal('expenseModal')">+ Add Expense</button>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Tool/Service</th>
+                                    <th>Category</th>
+                                    <th>Amount</th>
+                                    <th>Recurring</th>
+                                </tr>
+                            </thead>
+                            <tbody id="expenseTableBody">
+                                <tr>
+                                    <td>Adobe Creative Suite</td>
+                                    <td>Software</td>
+                                    <td>$52.99</td>
+                                    <td>✅ Yes</td>
+                                </tr>
+                                <tr>
+                                    <td>Figma Pro</td>
+                                    <td>Software</td>
+                                    <td>$12.00</td>
+                                    <td>✅ Yes</td>
+                                </tr>
+                                <tr>
+                                    <td>New Monitor</td>
+                                    <td>Gear</td>
+                                    <td>$299.99</td>
+                                    <td>❌ No</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Invoice Tracker Section -->
+        <div class="section" id="invoices" style="display: none;">
+            <div class="section-header">
+                <h2>🧾 Invoice Tracker</h2>
+                <div class="section-stats">
+                    <span>⏰ 2 pending</span>
+                    <span>💸 $4,800 outstanding</span>
+                </div>
+            </div>
+            <div class="section-content">
+                <button class="btn" onclick="openModal('invoiceModal')">+ New Invoice Entry</button>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Invoice #</th>
+                            <th>Client</th>
+                            <th>Amount</th>
+                            <th>Sent On</th>
+                            <th>Paid On</th>
+                            <th>Status</th>
+                            <th>Days Outstanding</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoicesTableBody">
+                        <tr>
+                            <td>INV-2024-001</td>
+                            <td>Acme Corp</td>
+                            <td>$2,750</td>
+                            <td>2024-01-01</td>
+                            <td>2024-01-15</td>
+                            <td><span class="status-badge status-completed">Paid</span></td>
+                            <td>14</td>
+                            <td>
+                                <button class="btn" style="padding: 5px 10px; font-size: 0.8rem;" onclick="downloadInvoice(this)">📄 Download</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>INV-2024-002</td>
+                            <td>Green Solutions</td>
+                            <td>$4,800</td>
+                            <td>2023-12-20</td>
+                            <td>2024-01-10</td>
+                            <td><span class="status-badge status-completed">Paid</span></td>
+                            <td>21</td>
+                            <td>
+                                <button class="btn" style="padding: 5px 10px; font-size: 0.8rem;" onclick="downloadInvoice(this)">📄 Download</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>INV-2024-003</td>
+                            <td>TechStart Inc</td>
+                            <td>$1,600</td>
+                            <td>2024-01-05</td>
+                            <td>-</td>
+                            <td><span class="status-badge status-progress">Sent</span></td>
+                            <td>11</td>
+                            <td>
+                                <button class="btn" style="padding: 5px 10px; font-size: 0.8rem;" onclick="sendReminder(this)">📧 Remind</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>INV-2024-004</td>
+                            <td>Blue Marketing</td>
+                            <td>$3,200</td>
+                            <td>2023-12-15</td>
+                            <td>-</td>
+                            <td><span class="status-badge status-cold">Overdue</span></td>
+                            <td>32</td>
+                            <td>
+                                <button class="btn" style="padding: 5px 10px; font-size: 0.8rem; background: #dc3545;" onclick="escalateInvoice(this)">⚠️ Escalate</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Cold Outreach Log Section -->
+        <div class="section" id="outreach" style="display: none;">
+            <div class="section-header">
+                <h2>✉️ Cold Outreach Log</h2>
+                <div class="section-stats">
+                    <span>📈 25% response rate</span>
+                    <span>🎯 3 leads this week</span>
+                </div>
+            </div>
+            <div class="section-content">
+                <button class="btn" onclick="openModal('outreachModal')">+ Add Outreach Entry</button>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Client/Brand Name</th>
+                            <th>Email Sent</th>
+                            <th>Response</th>
+                            <th>Follow-up Needed</th>
+                            <th>Service Offered</th>
+                            <th>Result</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="outreachTableBody">
+                        <tr>
+                            <td>Future Tech Co</td>
+                            <td>2024-01-10</td>
+                            <td>✅ Yes</td>
+                            <td>❌ No</td>
+                            <td>Web Development</td>
+                            <td>Discovery Call Scheduled</td>
+                            <td>
+                                <button class="btn" style="padding: 5px 10px; font-size: 0.8rem;" onclick="convertToClient(this)">🎯 Convert</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Creative Agency X</td>
+                            <td>2024-01-08</td>
+                            <td>❌ No</td>
+                            <td>✅ Yes</td>
+                            <td>Brand Design</td>
+                            <td>No Response</td>
+                            <td>
+                                <button class="btn" style="padding: 5px 10px; font-size: 0.8rem;" onclick="scheduleFollowUp(this)">📅 Follow Up</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Startup Ventures</td>
+                            <td>2024-01-05</td>
+                            <td>✅ Yes</td>
+                            <td>❌ No</td>
+                            <td>Full Stack Development</td>
+                            <td>Declined - Budget</td>
+                            <td>
+                                <button class="btn" style="padding: 5px 10px; font-size: 0.8rem;" onclick="markClosed(this)">❌ Close</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Local Restaurant</td>
+                            <td>2024-01-12</td>
+                            <td>✅ Yes</td>
+                            <td>❌ No</td>
+                            <td>Website + SEO</td>
+                            <td>Proposal Sent</td>
+                            <td>
+                                <button class="btn" style="padding: 5px 10px; font-size: 0.8rem;" onclick="trackProposal(this)">📋 Track</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Client Modal -->
+    <div id="clientModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Client</h3>
+                <button class="close" onclick="closeModal('clientModal')">&times;</button>
+            </div>
+            <form id="clientForm">
+                <div class="form-group">
+                    <label for="clientName">Client Name</label>
+                    <input type="text" id="clientName" name="clientName" required>
+                </div>
+                <div class="form-group">
+                    <label for="clientEmail">Email</label>
+                    <input type="email" id="clientEmail" name="clientEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="clientPhone">Phone</label>
+                    <input type="tel" id="clientPhone" name="clientPhone">
+                </div>
+                <div class="form-group">
+                    <label for="projectName">Project Name</label>
+                    <input type="text" id="projectName" name="projectName" required>
+                </div>
+                <div class="form-group">
+                    <label for="clientStatus">Status</label>
+                    <select id="clientStatus" name="clientStatus" required>
+                        <option value="Lead">Lead</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Cold">Cold</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="projectValue">Project Value ($)</label>
+                    <input type="number" id="projectValue" name="projectValue" required>
+                </div>
+                <div class="form-group">
+                    <label for="nextAction">Next Action</label>
+                    <input type="text" id="nextAction" name="nextAction">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('clientModal')">Cancel</button>
+                    <button type="submit" class="btn">Add Client</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Project Modal -->
+    <div id="projectModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Project</h3>
+                <button class="close" onclick="closeModal('projectModal')">&times;</button>
+            </div>
+            <form id="projectForm">
+                <div class="form-group">
+                    <label for="projectTitle">Project Title</label>
+                    <input type="text" id="projectTitle" name="projectTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="projectClient">Client</label>
+                    <select id="projectClient" name="projectClient" required>
+                        <option value="Acme Corp">Acme Corp</option>
+                        <option value="TechStart Inc">TechStart Inc</option>
+                        <option value="Green Solutions">Green Solutions</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="startDate">Start Date</label>
+                    <input type="date" id="startDate" name="startDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="dueDate">Due Date</label>
+                    <input type="date" id="dueDate" name="dueDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="deliverables">Deliverables</label>
+                    <textarea id="deliverables" name="deliverables" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="projectStatus">Status</label>
+                    <select id="projectStatus" name="projectStatus" required>
+                        <option value="Planned">Planned</option>
+                        <option value="Editing">Editing</option>
+                        <option value="Waiting for Client">Waiting for Client</option>
+                        <option value="Done">Done</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('projectModal')">Cancel</button>
+                    <button type="submit" class="btn">Add Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Income Modal -->
+    <div id="incomeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Income Entry</h3>
+                <button class="close" onclick="closeModal('incomeModal')">&times;</button>
+            </div>
+            <form id="incomeForm">
+                <div class="form-group">
+                    <label for="incomeClient">Client</label>
+                    <select id="incomeClient" name="incomeClient" required>
+                        <option value="Acme Corp">Acme Corp</option>
+                        <option value="TechStart Inc">TechStart Inc</option>
+                        <option value="Green Solutions">Green Solutions</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="incomeAmount">Amount ($)</label>
+                    <input type="number" id="incomeAmount" name="incomeAmount" required>
+                </div>
+                <div class="form-group">
+                    <label for="paymentDate">Payment Date</label>
+                    <input type="date" id="paymentDate" name="paymentDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="paymentMethod">Payment Method</label>
+                    <select id="paymentMethod" name="paymentMethod" required>
+                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="PayPal">PayPal</option>
+                        <option value="Stripe">Stripe</option>
+                        <option value="Check">Check</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('incomeModal')">Cancel</button>
+                    <button type="submit" class="btn">Add Income</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Expense Modal -->
+    <div id="expenseModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Expense Entry</h3>
+                <button class="close" onclick="closeModal('expenseModal')">&times;</button>
+            </div>
+            <form id="expenseForm">
+                <div class="form-group">
+                    <label for="expenseName">Tool/Service Name</label>
+                    <input type="text" id="expenseName" name="expenseName" required>
+                </div>
+                <div class="form-group">
+                    <label for="expenseCategory">Category</label>
+                    <select id="expenseCategory" name="expenseCategory" required>
+                        <option value="Software">Software</option>
+                        <option value="Gear">Gear</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Education">Education</option>
+                        <option value="Travel">Travel</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="expenseAmount">Amount ($)</label>
+                    <input type="number" id="expenseAmount" name="expenseAmount" required>
+                </div>
+                <div class="form-group">
+                    <label for="recurring">Recurring Expense?</label>
+                    <select id="recurring" name="recurring" required>
+                        <option value="No">No</option>
+                        <option value="Yes">Yes</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="expenseNotes">Notes</label>
+                    <textarea id="expenseNotes" name="expenseNotes" rows="2"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('expenseModal')">Cancel</button>
+                    <button type="submit" class="btn">Add Expense</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Invoice Modal -->
+    <div id="invoiceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Invoice Entry</h3>
+                <button class="close" onclick="closeModal('invoiceModal')">&times;</button>
+            </div>
+            <form id="invoiceForm">
+                <div class="form-group">
+                    <label for="invoiceNumber">Invoice Number</label>
+                    <input type="text" id="invoiceNumber" name="invoiceNumber" required>
+                </div>
+                <div class="form-group">
+                    <label for="invoiceClient">Client</label>
+                    <select id="invoiceClient" name="invoiceClient" required>
+                        <option value="Acme Corp">Acme Corp</option>
+                        <option value="TechStart Inc">TechStart Inc</option>
+                        <option value="Green Solutions">Green Solutions</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="invoiceAmount">Amount ($)</label>
+                    <input type="number" id="invoiceAmount" name="invoiceAmount" required>
+                </div>
+                <div class="form-group">
+                    <label for="sentDate">Sent Date</label>
+                    <input type="date" id="sentDate" name="sentDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="invoiceStatus">Status</label>
+                    <select id="invoiceStatus" name="invoiceStatus" required>
+                        <option value="Sent">Sent</option>
+                        <option value="Paid">Paid</option>
+                        <option value="Overdue">Overdue</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('invoiceModal')">Cancel</button>
+                    <button type="submit" class="btn">Add Invoice</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Outreach Modal -->
+    <div id="outreachModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Outreach Entry</h3>
+                <button class="close" onclick="closeModal('outreachModal')">&times;</button>
+            </div>
+            <form id="outreachForm">
+                <div class="form-group">
+                    <label for="brandName">Client/Brand Name</label>
+                    <input type="text" id="brandName" name="brandName" required>
+                </div>
+                <div class="form-group">
+                    <label for="emailSent">Email Sent Date</label>
+                    <input type="date" id="emailSent" name="emailSent" required>
+                </div>
+                <div class="form-group">
+                    <label for="response">Response Received?</label>
+                    <select id="response" name="response" required>
+                        <option value="No">No</option>
+                        <option value="Yes">Yes</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="followUp">Follow-up Needed?</label>
+                    <select id="followUp" name="followUp" required>
+                        <option value="No">No</option>
+                        <option value="Yes">Yes</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="serviceOffered">Service Offered</label>
+                    <input type="text" id="serviceOffered" name="serviceOffered" required>
+                </div>
+                <div class="form-group">
+                    <label for="result">Result</label>
+                    <input type="text" id="result" name="result" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('outreachModal')">Cancel</button>
+                    <button type="submit" class="btn">Add Outreach</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <script>
+        // Achievement System
+        let userLevel = 3;
+        let userXP = 750;
+        let maxXP = 1000;
+        let achievements = {
+            firstClient: true,
+            projectMaster: true,
+            moneyMaker: false,
+            invoicePro: true,
+            networkKing: false
+        };
+
+        // Statistics tracking
+        let stats = {
+            totalClients: 15,
+            activeProjects: 8,
+            monthlyIncome: 12450,
+            monthlyExpenses: 2340,
+            completedProjects: 12,
+            invoicesSent: 15,
+            outreachSent: 25,
+            responseRate: 25
+        };
+
+        // Navigation functionality
+        function showSection(sectionId) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => {
+                section.style.display = 'none';
+            });
+
+            // Show selected section
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.style.display = 'block';
+            }
+
+            // Update navigation cards
+            const navCards = document.querySelectorAll('.nav-card');
+            navCards.forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            // Highlight active nav card
+            const activeCard = document.querySelector(`[data-section="${sectionId}"]`);
+            if (activeCard) {
+                activeCard.classList.add('active');
+            }
+        }
+
+        // Modal functionality
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('show');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Achievement and notification system
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                ${message}
+                <button class="notification-close" onclick="this.parentElement.remove()">&times;</button>
+            `;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+
+        function gainXP(amount, reason) {
+            userXP += amount;
+            showNotification(`+${amount} XP: ${reason}`, 'success');
+            
+            if (userXP >= maxXP) {
+                levelUp();
+            }
+            
+            updateProgressBar();
+        }
+
+        function levelUp() {
+            userLevel++;
+            userXP = userXP - maxXP;
+            maxXP += 200; // Increase XP requirement for next level
+            
+            showNotification(`🎉 Level Up! You are now Level ${userLevel}!`, 'achievement');
+            updateLevelDisplay();
+            
+            // Trigger celebration animation
+            document.querySelector('.header').style.animation = 'celebrate 2s ease-in-out';
+            setTimeout(() => {
+                document.querySelector('.header').style.animation = '';
+            }, 2000);
+        }
+
+        function unlockAchievement(achievementKey, title, description) {
+            if (!achievements[achievementKey]) {
+                achievements[achievementKey] = true;
+                showNotification(`🏆 Achievement Unlocked: ${title}! ${description}`, 'achievement');
+                updateAchievementDisplay();
+                gainXP(100, `Achievement: ${title}`);
+            }
+        }
+
+        function updateProgressBar() {
+            const progressFill = document.querySelector('.progress-fill');
+            const percentage = (userXP / maxXP) * 100;
+            progressFill.style.width = `${percentage}%`;
+            
+            const levelInfo = document.querySelector('.level-info');
+            levelInfo.innerHTML = `
+                <span>Level ${userLevel} Freelancer</span>
+                <span>${userXP}/${maxXP} XP</span>
+            `;
+        }
+
+        function updateLevelDisplay() {
+            updateProgressBar();
+        }
+
+        function updateAchievementDisplay() {
+            // Update achievement badges based on current status
+            const badges = document.querySelectorAll('.achievement-badge');
+            badges.forEach(badge => {
+                const text = badge.textContent.toLowerCase();
+                if (text.includes('first client') && achievements.firstClient) {
+                    badge.classList.add('unlocked');
+                    badge.classList.remove('locked');
+                }
+                // Add more achievement checks as needed
+            });
+        }
+
+        // Interactive action functions
+        function markCompleted(button) {
+            const row = button.closest('tr');
+            const statusBadge = row.querySelector('.status-badge');
+            statusBadge.textContent = 'Completed';
+            statusBadge.className = 'status-badge status-completed';
+            
+            button.textContent = '✅ Done';
+            button.disabled = true;
+            button.style.opacity = '0.6';
+            
+            row.classList.add('new-entry');
+            gainXP(50, 'Project completed');
+            
+            stats.completedProjects++;
+            checkAchievements();
+            
+            showNotification('Project marked as completed! Great work! 🎉');
+        }
+
+        function convertLead(button) {
+            const row = button.closest('tr');
+            const statusBadge = row.querySelector('.status-badge');
+            statusBadge.textContent = 'In Progress';
+            statusBadge.className = 'status-badge status-progress';
+            
+            button.textContent = '🚀 Converted';
+            button.disabled = true;
+            button.style.opacity = '0.6';
+            
+            row.classList.add('new-entry');
+            gainXP(75, 'Lead converted to client');
+            
+            showNotification('Lead successfully converted! 🚀');
+        }
+
+        function updateProgress(button, newProgress) {
+            const row = button.closest('tr');
+            const progressBar = row.querySelector('.progress-fill');
+            const progressText = row.querySelector('span');
+            
+            progressBar.style.width = `${newProgress}%`;
+            progressText.textContent = `${newProgress}%`;
+            
+            gainXP(25, 'Project progress updated');
+            showNotification(`Progress updated to ${newProgress}%! Keep going! 📈`);
+            
+            if (newProgress >= 100) {
+                setTimeout(() => {
+                    markCompleted(button);
+                }, 1000);
+            }
+        }
+
+        function startProject(button) {
+            const row = button.closest('tr');
+            const statusBadge = row.querySelector('.status-badge');
+            statusBadge.textContent = 'In Progress';
+            statusBadge.className = 'status-badge status-progress';
+            
+            button.textContent = '⚡ Started';
+            button.disabled = true;
+            button.style.opacity = '0.6';
+            
+            gainXP(30, 'Project started');
+            showNotification('Project started! Time to create something amazing! ⚡');
+        }
+
+        function celebrateAchievement(type) {
+            const card = event.target.closest('.summary-card');
+            card.classList.add('milestone');
+            
+            if (type === 'income') {
+                showNotification('🎉 Milestone reached! $10K+ monthly income!', 'achievement');
+                unlockAchievement('moneyMaker', 'Money Maker', 'Earned $10,000+ in a month');
+            }
+            
+            setTimeout(() => {
+                card.classList.remove('milestone');
+            }, 3000);
+        }
+
+        function checkAchievements() {
+            // Check various achievement conditions
+            if (stats.completedProjects >= 5 && !achievements.projectMaster) {
+                unlockAchievement('projectMaster', 'Project Master', 'Completed 5 projects');
+            }
+            
+            if (stats.monthlyIncome >= 10000 && !achievements.moneyMaker) {
+                unlockAchievement('moneyMaker', 'Money Maker', 'Earned $10,000+ in a month');
+            }
+            
+            if (stats.totalClients >= 20 && !achievements.networkKing) {
+                unlockAchievement('networkKing', 'Network King', 'Acquired 20+ clients');
+            }
+            
+            if (stats.invoicesSent >= 10 && !achievements.invoicePro) {
+                unlockAchievement('invoicePro', 'Invoice Pro', 'Sent 10+ invoices');
+            }
+        }
+
+        // Form submission handlers
+        document.getElementById('clientForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const clientData = Object.fromEntries(formData);
+            
+            // Add new row to clients table
+            const tableBody = document.getElementById('clientsTableBody');
+            const newRow = document.createElement('tr');
+            newRow.classList.add('new-entry');
+            
+            const statusClass = clientData.clientStatus.toLowerCase().replace(' ', '-');
+            
+            newRow.innerHTML = `
+                <td>${clientData.clientName}</td>
+                <td>${clientData.clientEmail}<br>${clientData.clientPhone || ''}</td>
+                <td>${clientData.projectName}</td>
+                <td><span class="status-badge status-${statusClass === 'in-progress' ? 'progress' : statusClass}">${clientData.clientStatus}</span></td>
+                <td>${new Date().toISOString().split('T')[0]}</td>
+                <td>$${clientData.projectValue}</td>
+                <td>${clientData.nextAction || '-'}</td>
+                <td>
+                    <button class="btn" style="padding: 5px 10px; font-size: 0.8rem;" onclick="markCompleted(this)">✓ Complete</button>
+                </td>
+            `;
+            
+            tableBody.appendChild(newRow);
+            
+            // Update stats
+            stats.totalClients++;
+            
+            // Gain XP and check achievements
+            gainXP(100, 'New client added');
+            checkAchievements();
+            
+            // Close modal and reset form
+            closeModal('clientModal');
+            e.target.reset();
+            
+            showNotification(`Client "${clientData.clientName}" added successfully! 🎉`);
+        });
+
+        document.getElementById('projectForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const projectData = Object.fromEntries(formData);
+            
+            // Add new row to projects table
+            const tableBody = document.getElementById('projectsTableBody');
+            const newRow = document.createElement('tr');
+            newRow.classList.add('new-entry');
+            
+            const statusClass = projectData.projectStatus.toLowerCase().replace(' ', '-');
+            
+            newRow.innerHTML = `
+                <td>${projectData.projectTitle}</td>
+                <td>${projectData.projectClient}</td>
+                <td>${projectData.startDate}</td>
+                <td>${projectData.dueDate}</td>
+                <td>${projectData.deliverables}</td>
+                <td><span class="status-badge status-${statusClass === 'waiting-for-client' ? 'progress' : statusClass}">${projectData.projectStatus}</span></td>
+                <td>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="progress-bar" style="width: 100px;">
+                            <div class="progress-fill" style="width: 0%"></div>
+                        </div>
+                        <span>0%</span>
+                    </div>
+                </td>
+                <td>
+                    <button class="btn" style="padding: 5px 10px; font-size: 0.8rem;" onclick="startProject(this)">▶️ Start</button>
+                </td>
+            `;
+            
+            tableBody.appendChild(newRow);
+            
+            // Update stats
+            stats.activeProjects++;
+            
+            // Gain XP
+            gainXP(75, 'New project created');
+            
+            // Close modal and reset form
+            closeModal('projectModal');
+            e.target.reset();
+            
+            showNotification(`Project "${projectData.projectTitle}" created successfully! 🚀`);
+        });
+
+        document.getElementById('incomeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const incomeData = Object.fromEntries(formData);
+            
+            // Add new row to income table
+            const tableBody = document.getElementById('incomeTableBody');
+            const newRow = document.createElement('tr');
+            newRow.classList.add('new-entry');
+            
+            newRow.innerHTML = `
+                <td>${incomeData.incomeClient}</td>
+                <td>$${incomeData.incomeAmount}</td>
+                <td>${incomeData.paymentDate}</td>
+                <td>${incomeData.paymentMethod}</td>
+                <td><span class="status-badge status-completed">Paid</span></td>
+            `;
+            
+            tableBody.appendChild(newRow);
+            
+            // Update stats
+            stats.monthlyIncome += parseInt(incomeData.incomeAmount);
+            
+            // Gain XP
+            gainXP(50, 'Income recorded');
+            checkAchievements();
+            
+            // Close modal and reset form
+            closeModal('incomeModal');
+            e.target.reset();
+            
+            showNotification(`Income of $${incomeData.incomeAmount} recorded! 💰`);
+        });
+
+        document.getElementById('expenseForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const expenseData = Object.fromEntries(formData);
+            
+            // Add new row to expense table
+            const tableBody = document.getElementById('expenseTableBody');
+            const newRow = document.createElement('tr');
+            newRow.classList.add('new-entry');
+            
+            newRow.innerHTML = `
+                <td>${expenseData.expenseName}</td>
+                <td>${expenseData.expenseCategory}</td>
+                <td>$${expenseData.expenseAmount}</td>
+                <td>${expenseData.recurring === 'Yes' ? '✅ Yes' : '❌ No'}</td>
+            `;
+            
+            tableBody.appendChild(newRow);
+            
+            // Update stats
+            stats.monthlyExpenses += parseInt(expenseData.expenseAmount);
+            
+            // Gain XP
+            gainXP(25, 'Expense tracked');
+            
+            // Close modal and reset form
+            closeModal('expenseModal');
+            e.target.reset();
+            
+            showNotification(`Expense of $${expenseData.expenseAmount} tracked! 📊`);
+        });
+
+        document.getElementById('invoiceForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const invoiceData = Object.fromEntries(formData);
+            
+            // Add new row to invoice table
+            const tableBody = document.getElementById('invoicesTableBody');
+            const newRow = document.createElement('tr');
+            newRow.classList.add('new-entry');
+            
+            const statusClass = invoiceData.invoiceStatus.toLowerCase();
+            const daysSent = Math.floor((new Date() - new Date(invoiceData.sentDate)) / (1000 * 60 * 60 * 24));
+            
+            newRow.innerHTML = `
+                <td>${invoiceData.invoiceNumber}</td>
+                <td>${invoiceData.invoiceClient}</td>
+                <td>$${invoiceData.invoiceAmount}</td>
+                <td>${invoiceData.sentDate}</td>
+                <td>${invoiceData.invoiceStatus === 'Paid' ? new Date().toISOString().split('T')[0] : '-'}</td>
+                <td><span class="status-badge status-${statusClass === 'paid' ? 'completed' : statusClass === 'overdue' ? 'cold' : 'progress'}">${invoiceData.invoiceStatus}</span></td>
+                <td>${daysSent}</td>
+                <td>
+                    <button class="btn" style="padding: 5px 10px; font-size: 0.8rem;" onclick="downloadInvoice(this)">📄 Download</button>
+                </td>
+            `;
+            
+            tableBody.appendChild(newRow);
+            
+            // Update stats
+            stats.invoicesSent++;
+            
+            // Gain XP
+            gainXP(40, 'Invoice created');
+            checkAchievements();
+            
+            // Close modal and reset form
+            closeModal('invoiceModal');
+            e.target.reset();
+            
+            showNotification(`Invoice ${invoiceData.invoiceNumber} created successfully! 📋`);
+        });
+
+        document.getElementById('outreachForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const outreachData = Object.fromEntries(formData);
+            
+            // Add new row to outreach table
+            const tableBody = document.getElementById('outreachTableBody');
+            const newRow = document.createElement('tr');
+            newRow.classList.add('new-entry');
+            
+            newRow.innerHTML = `
+                <td>${outreachData.brandName}</td>
+                <td>${outreachData.emailSent}</td>
+                <td>${outreachData.response === 'Yes' ? '✅ Yes' : '❌ No'}</td>
+                <td>${outreachData.followUp === 'Yes' ? '✅ Yes' : '❌ No'}</td>
+                <td>${outreachData.serviceOffered}</td>
+                <td>${outreachData.result}</td>
+                <td>
+                    <button class="btn" style="padding: 5px 10px; font-size: 0.8rem;" onclick="convertToClient(this)">🎯 Convert</button>
+                </td>
+            `;
+            
+            tableBody.appendChild(newRow);
+            
+            // Update stats
+            stats.outreachSent++;
+            if (outreachData.response === 'Yes') {
+                stats.responseRate = Math.round((stats.responseRate * (stats.outreachSent - 1) + 100) / stats.outreachSent);
+            }
+            
+            // Gain XP
+            gainXP(30, 'Outreach logged');
+            
+            // Close modal and reset form
+            closeModal('outreachModal');
+            e.target.reset();
+            
+            showNotification(`Outreach to ${outreachData.brandName} logged! 📧`);
+        });
+
+        // Additional interactive functions
+        function sendReminder(button) {
+            gainXP(10, 'Invoice reminder sent');
+            showNotification('Reminder sent to client! 📧');
+            button.textContent = '✅ Sent';
+            button.disabled = true;
+            button.style.opacity = '0.6';
+        }
+
+        function downloadInvoice(button) {
+            showNotification('Invoice downloaded! 📄');
+        }
+
+        function convertToClient(button) {
+            const row = button.closest('tr');
+            const brandName = row.cells[0].textContent;
+            
+            gainXP(100, 'Outreach converted to client');
+            showNotification(`${brandName} converted to client! Excellent work! 🎯`);
+            
+            button.textContent = '✅ Converted';
+            button.disabled = true;
+            button.style.opacity = '0.6';
+            
+            stats.totalClients++;
+            checkAchievements();
+        }
+
+        function scheduleFollowUp(button) {
+            gainXP(15, 'Follow-up scheduled');
+            showNotification('Follow-up scheduled! 📅');
+            button.textContent = '📅 Scheduled';
+            button.disabled = true;
+            button.style.opacity = '0.6';
+        }
+
+        // Close modals when clicking outside
+        window.addEventListener('click', function(event) {
+            if (event.target.classList.contains('modal')) {
+                const modalId = event.target.id;
+                closeModal(modalId);
+            }
+        });
+
+        // Initialize - show clients section by default
+        document.addEventListener('DOMContentLoaded', function() {
+            showSection('clients');
+            updateProgressBar();
+            updateAchievementDisplay();
+            
+            // Welcome message
+            setTimeout(() => {
+                showNotification('Welcome back to Freelancer HQ! Ready to achieve more? 🚀', 'achievement');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
+
